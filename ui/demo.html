@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Snake Water Gun — by Afaq Ali</title>
+  <style>
+    /* ─── Reset & Base ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d1117;
+      --surface:   #161b22;
+      --border:    #30363d;
+      --green:     #3fb950;
+      --red:       #f85149;
+      --yellow:    #d29922;
+      --blue:      #58a6ff;
+      --cyan:      #39d353;
+      --muted:     #8b949e;
+      --text:      #c9d1d9;
+      --white:     #f0f6fc;
+      --font-mono: "Courier New", Courier, monospace;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      padding: 2rem 1rem 4rem;
+    }
+
+    /* ─── Layout ─── */
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* ─── Hero ─── */
+    .hero {
+      text-align: center;
+      padding: 3rem 0 2rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 3rem;
+    }
+
+    .hero h1 {
+      font-size: 2.6rem;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.5px;
+    }
+
+    .hero p {
+      margin-top: 0.75rem;
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
+    }
+
+    .badge-row {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .badge {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.3rem 0.85rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-family: var(--font-mono);
+    }
+
+    .badge.green { color: var(--green); border-color: var(--green); }
+    .badge.blue  { color: var(--blue);  border-color: var(--blue);  }
+
+    /* ─── Run command ─── */
+    .run-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+
+    .run-cmd {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.7rem 1.4rem;
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      color: var(--cyan);
+    }
+
+    .run-cmd span { color: var(--muted); margin-right: 0.5rem; }
+
+    /* ─── Section headings ─── */
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    section { margin-bottom: 2.8rem; }
+
+    /* ─── Rules table ─── */
+    .rules-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+    }
+
+    .rules-table th {
+      text-align: left;
+      padding: 0.6rem 1rem;
+      background: var(--surface);
+      color: var(--muted);
+      font-weight: 600;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .rules-table td {
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .rules-table tr:last-child td { border-bottom: none; }
+
+    .rules-table .win  { color: var(--green); }
+    .rules-table .big  { font-size: 1.15rem; }
+
+    /* ─── Terminal mock ─── */
+    .terminal {
+      background: #010409;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      line-height: 1.65;
+    }
+
+    .terminal-titlebar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0.5rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot.red    { background: #ff5f57; }
+    .dot.yellow { background: #febc2e; }
+    .dot.green  { background: #28c840; }
+
+    .terminal-titlebar span {
+      margin-left: auto;
+      margin-right: auto;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .terminal-body { padding: 1.2rem 1.4rem; }
+
+    .line { display: block; }
+    .line.prompt  { color: var(--cyan); }
+    .line.cmd     { color: var(--white); }
+    .line.muted   { color: var(--muted); }
+    .line.win     { color: var(--green); font-weight: 600; }
+    .line.lose    { color: var(--red);   font-weight: 600; }
+    .line.draw    { color: var(--yellow); }
+    .line.header  { color: var(--blue);  font-weight: 600; }
+    .line.empty   { display: block; height: 0.5rem; }
+    .line.dim     { color: #444d56; }
+
+    /* ─── Feature grid ─── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.1rem 1.2rem;
+    }
+
+    .feature-card .icon { font-size: 1.4rem; margin-bottom: 0.5rem; display: block; }
+    .feature-card h3 { font-size: 0.9rem; color: var(--white); margin-bottom: 0.35rem; }
+    .feature-card p  { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+
+    /* ─── Structure tree ─── */
+    .tree {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.2rem 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      line-height: 1.8;
+      color: var(--text);
+    }
+
+    .tree .dir   { color: var(--blue); }
+    .tree .file  { color: var(--text); }
+    .tree .note  { color: var(--muted); font-size: 0.8rem; }
+
+    /* ─── Footer ─── */
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+    }
+
+    footer a { color: var(--blue); text-decoration: none; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ── Hero ── -->
+  <section class="hero">
+    <h1>🐍 Snake Water Gun</h1>
+    <p>
+      A terminal-based Snake-Water-Gun game built in Python.
+      10 rounds per match, score tracking, and a replay prompt.
+      No libraries — just run it.
+    </p>
+
+    <div class="badge-row">
+      <span class="badge green">Python 3.6+</span>
+      <span class="badge blue">Terminal Game</span>
+      <span class="badge">stdlib only</span>
+      <span class="badge">MIT License</span>
+    </div>
+
+    <div class="run-box">
+      <div class="run-cmd"><span>$</span>python main.py</div>
+    </div>
+  </section>
+
+  <!-- ── Rules ── -->
+  <section>
+    <p class="section-title">Rules</p>
+    <table class="rules-table">
+      <thead>
+        <tr>
+          <th>Your Pick</th>
+          <th>Beats</th>
+          <th>Why</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="big">🐍 Snake</td>
+          <td class="big win">💧 Water</td>
+          <td>Snake drinks it</td>
+        </tr>
+        <tr>
+          <td class="big">💧 Water</td>
+          <td class="big win">🔫 Gun</td>
+          <td>Water rusts it</td>
+        </tr>
+        <tr>
+          <td class="big">🔫 Gun</td>
+          <td class="big win">🐍 Snake</td>
+          <td>Gun shoots it</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ── Terminal Preview ── -->
+  <section>
+    <p class="section-title">Demo Output</p>
+    <div class="terminal">
+      <div class="terminal-titlebar">
+        <div class="dot red"></div>
+        <div class="dot yellow"></div>
+        <div class="dot green"></div>
+        <span>bash — python main.py</span>
+      </div>
+      <div class="terminal-body">
+        <span class="line prompt">$ python main.py</span>
+        <span class="line empty"></span>
+        <span class="line header">======================================</span>
+        <span class="line header">  SNAKE  WATER  GUN 🐍</span>
+        <span class="line header">======================================</span>
+        <span class="line muted">        Created by Afaq Ali</span>
+        <span class="line empty"></span>
+        <span class="line cmd">  1. Play</span>
+        <span class="line cmd">  2. Exit</span>
+        <span class="line empty"></span>
+        <span class="line prompt">Enter 1 or 2: <span style="color:#fff">1</span></span>
+        <span class="line empty"></span>
+        <span class="line muted">--------🐍 New Match Starting 🐍--------</span>
+        <span class="line dim">  ---1---  ---2---  ---3---  ---4---  ---5---</span>
+        <span class="line muted">--------🎉 Game Started 🎉--------</span>
+        <span class="line empty"></span>
+        <span class="line muted">--------------------------------------</span>
+        <span class="line muted">  YOUR MOVES 👇</span>
+        <span class="line muted">--------------------------------------</span>
+        <span class="line cmd">  S = Snake 🐍 &nbsp; W = Water 💧 &nbsp; G = Gun 🔫</span>
+        <span class="line empty"></span>
+        <span class="line prompt">Enter Your Choice (s/w/g): <span style="color:#fff">s</span></span>
+        <span class="line empty"></span>
+        <span class="line header">========== ROUND 1 ==========</span>
+        <span class="line cmd">🧑 YOU : Snake🐍 &nbsp;|&nbsp; 💻 ENEMY : Water💧</span>
+        <span class="line win">Result: 🎉 YOU WIN 🎉</span>
+        <span class="line empty"></span>
+        <span class="line prompt">Enter Your Choice (s/w/g): <span style="color:#fff">g</span></span>
+        <span class="line empty"></span>
+        <span class="line header">========== ROUND 2 ==========</span>
+        <span class="line cmd">🧑 YOU : Gun🔫 &nbsp;|&nbsp; 💻 ENEMY : Gun🔫</span>
+        <span class="line draw">Result: DRAW 🤩</span>
+        <span class="line empty"></span>
+        <span class="line muted">... 8 more rounds ...</span>
+        <span class="line empty"></span>
+        <span class="line header">======================================</span>
+        <span class="line header">  OVERALL SCORE 🎯</span>
+        <span class="line header">======================================</span>
+        <span class="line win">  You   : 60%  (6/10 rounds)</span>
+        <span class="line lose">  Enemy : 30%  (3/10 rounds)</span>
+        <span class="line draw">  Draws : 1</span>
+        <span class="line empty"></span>
+        <span class="line header">======================================</span>
+        <span class="line header">  FINAL RESULT</span>
+        <span class="line header">======================================</span>
+        <span class="line win">  🎉 YOU WON!</span>
+        <span class="line empty"></span>
+        <span class="line prompt">Play again? (yes / no): <span style="color:#fff">no</span></span>
+        <span class="line muted">Thanks for playing. See you next time.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Features ── -->
+  <section>
+    <p class="section-title">Features</p>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <span class="icon">🎮</span>
+        <h3>10-Round Matches</h3>
+        <p>Each game runs for exactly 10 rounds with live round-by-round output.</p>
+      </div>
+      <div class="feature-card">
+        <span class="icon">📊</span>
+        <h3>Score Tracking</h3>
+        <p>Win percentage displayed for both sides at the end of every match.</p>
+      </div>
+      <div class="feature-card">
+        <span class="icon">🔁</span>
+        <h3>Replay Prompt</h3>
+        <p>Play again without restarting the terminal — just type yes or no.</p>
+      </div>
+      <div class="feature-card">
+        <span class="icon">✅</span>
+        <h3>Input Validation</h3>
+        <p>Wrong input? The round replays cleanly instead of crashing.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Structure ── -->
+  <section>
+    <p class="section-title">Project Structure</p>
+    <div class="tree">
+      <span class="dir">snake-water-gun/</span><br>
+      &nbsp;&nbsp;├── <span class="file">main.py</span>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="note"># all game logic</span><br>
+      &nbsp;&nbsp;├── <span class="file">README.md</span><br>
+      &nbsp;&nbsp;├── <span class="file">requirements.txt</span>
+        &nbsp;&nbsp;<span class="note"># stdlib only, Python 3.6+</span><br>
+      &nbsp;&nbsp;└── <span class="dir">ui/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── <span class="file">demo.html</span>
+        &nbsp;&nbsp;<span class="note"># this page</span>
+    </div>
+  </section>
+
+  <!-- ── Footer ── -->
+  <footer>
+    Built by <strong>Afaq Ali</strong> &nbsp;·&nbsp;
+    <a href="https://github.com/your-username/snake-water-gun">GitHub</a>
+    &nbsp;·&nbsp; MIT License
+  </footer>
+
+</div>
+</body>
+</html>
