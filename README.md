@@ -132,15 +132,6 @@ Path:
 
 ---
 
-## GitHub Info
-
-**Repo name:** `snake-water-gun`  
-**Description:** Terminal Snake-Water-Gun game in Python — 10 rounds, score tracking, replay prompt  
-**Topics:** `python` `cli-game` `terminal-game` `beginner-python` `rock-paper-scissors` `game`  
-**License:** MIT
-
----
-
 ## License
 
 MIT — do whatever you want with it.
