@@ -30,7 +30,7 @@ A terminal-based take on Rock Paper Scissors built in Python. Pick Snake, Water,
 No external libraries needed. Just Python 3.
 
 ```bash
-git clone https://github.com/your-username/snake-water-gun.git
+git clone git clone https://github.com/AFAQALI-Ai/snake-water-gun.git
 cd snake-water-gun
 python main.py
 ```
